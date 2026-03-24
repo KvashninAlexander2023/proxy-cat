@@ -74,17 +74,28 @@ export default async function handler(req, res) {
     const response = await fetch(targetUrl, fetchOptions)
     
     // 7. Получаем ответ
-    let data
-    const contentType = response.headers.get('content-type')
     
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json()
-    } else {
-      data = await response.text()
+    const contentType = response.headers.get('content-type') || ''
+    
+      if (contentType.startsWith('image/')) {
+      // Для изображений — возвращаем бинарные данные
+      const buffer = await response.arrayBuffer()
+      res.setHeader('Content-Type', contentType)
+      res.setHeader('Content-Length', response.headers.get('content-length') || '')
+      res.setHeader('Cache-Control', 'public, max-age=86400')
+      res.send(Buffer.from(buffer))
+    } 
+    else if (contentType.includes('application/json')) {
+      // Для JSON — возвращаем JSON
+      const data = await response.json()
+      res.status(response.status).json(data)
+    } 
+    else {
+      // Для остальных типов (текст, xml и т.д.)
+      const data = await response.text()
+      res.setHeader('Content-Type', contentType)
+      res.status(response.status).send(data)
     }
-    
-    // 8. Отправляем ответ клиенту
-    res.status(response.status).json(data)
     
   } catch (error) {
     console.error('Proxy error:', error)
