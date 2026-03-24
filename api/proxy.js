@@ -2,7 +2,7 @@ export const config = {
   runtime: 'nodejs',
 }
 
-const API_BASE = 'https://api.thecatapi.com/v1/images'
+const API_BASE = 'https://api.thecatapi.com'
 
 export default async function handler(req, res) {
   // 1. Разрешаем ВСЕ заголовки для CORS
